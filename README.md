@@ -1,1 +1,20 @@
-This is the README file for the ECE103 Radar Project
+#ECE103_Radar
+
+##Overview
+
+##Design Goals
+
+##Hardware
+
+##Software
+
+##Project Structure
+
+##Building
+
+##Running
+
+##ESP32 communication
+
+
+
