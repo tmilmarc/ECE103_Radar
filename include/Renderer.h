@@ -32,4 +32,6 @@ private:
     static constexpr float EDGE_MARGIN = 5.0f;
 
     void DrawArc(float radius);
+    void DrawRangeCircles();
+    void DrawRadii();
 };

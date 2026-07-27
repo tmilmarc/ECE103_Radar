@@ -55,7 +55,8 @@ void Renderer::Draw()
     radarRadius = std::min(screenWidth / 2.0f, (float)screenHeight) - EDGE_MARGIN;
     pixelsPerCm = radarRadius / MAX_RANGE_CM;
    
-    DrawArc(radarRadius);
+    DrawRangeCircles();
+    DrawRadii();
 
 
     // Fake radar data
@@ -147,6 +148,52 @@ void Renderer::DrawArc(float radius)
 
         previousX = x;
         previousY = y;
+    }
+}
+
+void Renderer::DrawRangeCircles()
+{
+    for(int i = 1; i <= 4; i++)
+    {
+        float radius = radarRadius * (i / 4.0f);
+
+        DrawArc(radius);
+    }
+}
+
+void Renderer::DrawRadii()
+{
+    SDL_SetRenderDrawColor(
+        renderer,
+        0,
+        150,
+        0,
+        255
+    );
+
+
+    for(int i = 0; i < 9; i++)
+    {
+        float angle = i * (180.0f / 8.0f);
+
+        float radians = angle * PI / 180.0f;
+
+
+        float x =
+            centerX + radarRadius * cos(radians);
+
+
+        float y =
+            centerY - radarRadius * sin(radians);
+
+
+        SDL_RenderLine(
+            renderer,
+            centerX,
+            centerY,
+            x,
+            y
+        );
     }
 }
 
