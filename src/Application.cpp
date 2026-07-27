@@ -6,12 +6,12 @@
 Application::Application()
 {
     window = nullptr;
-    renderer = nullptr;
     running = false;
 }
 
 Application::~Application()
 {
+    Shutdown();
 }
 
 bool Application::Initialize()
@@ -38,10 +38,7 @@ bool Application::Initialize()
     }
 
 
-    renderer = SDL_CreateRenderer(window, nullptr);
-
-
-    if (renderer == nullptr)
+   if(!renderer.Initialize(window))
     {
         return false;
     }
@@ -69,26 +66,14 @@ void Application::Run()
 
 
         
-        SDL_SetRenderDrawColor(renderer, 0, 255, 0, 255);
-
-        SDL_FRect rectangle;
-
-        rectangle.x = 350;
-        rectangle.y = 250;
-        rectangle.w = 100;
-        rectangle.h = 100;
-
-        SDL_RenderFillRect(renderer, &rectangle);
-
-        SDL_RenderPresent(renderer);
+        renderer.Draw();
      
     }
 }
 
 void Application::Shutdown()
 {
-    SDL_DestroyRenderer(renderer);
-
+    renderer.Shutdown();
     SDL_DestroyWindow(window);
 
     SDL_Quit();

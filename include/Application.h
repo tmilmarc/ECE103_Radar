@@ -1,8 +1,8 @@
 //Header for Application.cpp
 #pragma once
 
+#include "Renderer.h"
 struct SDL_Window;
-struct SDL_Renderer;
 
 
 class Application
@@ -18,7 +18,7 @@ public:
     private:
 
     SDL_Window* window;
-    SDL_Renderer* renderer;
+    Renderer renderer;
 
     bool running;
 };
