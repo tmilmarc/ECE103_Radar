@@ -1,0 +1,12 @@
+# Let Git handle line endings automatically
+* text=auto
+
+# C++ source files always use LF
+*.cpp text eol=lf
+*.h text eol=lf
+
+# CMake files
+CMakeLists.txt text eol=lf
+
+# Arduino files
+*.ino text eol=lf
