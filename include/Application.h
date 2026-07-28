@@ -19,6 +19,11 @@ public:
 
     SDL_Window* window;
     Renderer renderer;
+    Radar radar;
 
     bool running;
+
+    float angle;
+    float distance;
+    bool increasing;
 };

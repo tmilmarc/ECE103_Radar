@@ -7,8 +7,12 @@ public:
     Radar();
     ~Radar();
 
-    void Update(int angle, float distance);
+    void Update(float angle, float distance);
+
+    float GetAngle() const;
+    float GetDistance() const;
 
 private:
-
+    float angle;
+    float distance;
 };

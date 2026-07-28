@@ -33,7 +33,7 @@ bool Renderer::Initialize(SDL_Window* window)
     return true;
 }
 
-void Renderer::Draw()
+void Renderer::Draw(Radar& radar)
 {
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
 
@@ -59,9 +59,9 @@ void Renderer::Draw()
     DrawRadii();
 
 
-    // Fake radar data
-    float angle = 180.0f;
-    float distanceCm = 200.0f;
+    
+    float angle = radar.GetAngle();
+    float distanceCm = radar.GetDistance();
 
     float distancePixels = distanceCm * pixelsPerCm;
 

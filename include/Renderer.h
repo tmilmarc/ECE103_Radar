@@ -2,7 +2,7 @@
 #pragma once
 
 #include <SDL3/SDL.h>
-
+#include "Radar.h"
 
 class Renderer
 {
@@ -11,7 +11,7 @@ public:
     ~Renderer();
 
     bool Initialize(SDL_Window* window);
-    void Draw();
+    void Draw(Radar& radar);
 
     void Shutdown();
 
