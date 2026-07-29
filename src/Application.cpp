@@ -4,12 +4,14 @@
 #include <iostream>
 
 Application::Application()
+    :fileReader("radar_data.txt")
 {
     window = nullptr;
     running = false;
     angle = 0.0f;
-    distance = 200.0f;
-    increasing = true;
+    distance = 0.0f;
+    dataTimer = 0.0f;
+    dataInterval = 0.03f;
 }
 
 Application::~Application()
@@ -19,6 +21,7 @@ Application::~Application()
 
 bool Application::Initialize()
 {
+    SDL_SetHint(SDL_HINT_VIDEO_DRIVER, "windows");
 
     if (!SDL_Init(SDL_INIT_VIDEO))
     {
@@ -46,7 +49,45 @@ bool Application::Initialize()
         return false;
     }
 
+    int choice;
+    
+    std::cout << "Select data source\n";
+    std::cout << "1 - Simulation File\n";
+    std::cout << "2 - Serial Port\n";
+    std::cout << "> ";
+    
+    std::cin >> choice;
+    
+    if(choice == 1)
+    {
+        dataMode = DataMode::File;
+    }
+    else
+    {
+        dataMode = DataMode::Serial;
+    }
+    
+    if(dataMode == DataMode::File)
+    {
+        if(!fileReader.Open())
+        {
+            std::cerr << "Could not open radar data file\n";
+            return false;
+        }
+    }
+    else
+    {
+        std::string portName;
 
+        std::cout << "Enter COM port (example COM3): ";
+        std::cin >> portName;
+
+        if(!serialPort.Open(portName))
+        {
+            std::cerr << "Could not open serial port\n";
+            return false;
+        }
+    }
     running = true;
 
     return true;
@@ -54,52 +95,73 @@ bool Application::Initialize()
 
 void Application::Run()
 {
-     SDL_Event event;
+    
+    
+    SDL_Event event;
 
+    Uint64 previousTime = SDL_GetTicks();
+    
 
     while(running)
     {
+        Uint64 currentTime = SDL_GetTicks();
+
+        float deltaTime =
+            (currentTime - previousTime) / 1000.0f;
+
+        previousTime = currentTime;
+
+
         while(SDL_PollEvent(&event))
         {
             if(event.type == SDL_EVENT_QUIT)
             {
                 running = false;
             }
-        }       
+        }
 
 
-        
-        if (increasing)
+        dataTimer += deltaTime;
+
+
+        if(dataTimer >= dataInterval)
         {
-            angle += 1.0f;
-        
-            if (angle >= 180.0f)
+            dataTimer = 0.0f;
+
+            if(dataMode == DataMode::File)
             {
-                angle = 180.0f;
-                increasing = false;
+                if(fileReader.Read(angle, distance))
+                {
+                    radar.Update(angle, distance);
+                }
+            }
+            else
+            {
+                if(serialPort.Read(angle, distance))
+                {
+                    radar.Update(angle, distance);
+                }
             }
         }
-        else
-        {
-            angle -= 1.0f;
-        
-            if (angle <= 0.0f)
-            {
-                angle = 0.0f;
-                increasing = true;
-            }
-        }
-        
-        radar.Update(angle, distance);
+
+
         renderer.Draw(radar);
-     
+
+        SDL_Delay(16);
     }
 }
 
 void Application::Shutdown()
 {
     renderer.Shutdown();
-    SDL_DestroyWindow(window);
+
+    serialPort.Close();
+
+    if(window != nullptr)
+    {
+        SDL_DestroyWindow(window);
+        window = nullptr;
+    }
 
     SDL_Quit();
 }

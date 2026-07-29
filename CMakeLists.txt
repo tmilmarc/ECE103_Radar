@@ -18,6 +18,7 @@ add_executable(ECE103_Radar
     src/Renderer.cpp
     src/Radar.cpp
     src/SerialPort.cpp
+    src/FileReader.cpp
 )
 
 target_include_directories(ECE103_Radar PRIVATE

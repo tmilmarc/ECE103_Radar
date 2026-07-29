@@ -1,5 +1,8 @@
 //Header for SerialPort.cpp
 #pragma once
+#include <string>
+#include <windows.h>
+#include <sstream>
 
 class SerialPort
 {
@@ -7,8 +10,11 @@ public:
     SerialPort();
     ~SerialPort();
 
-    bool Connect();
-    void Disconnect();
+    bool Open(const std::string& portName);
+    bool Read(float& angle, float& distance);
+    void Close();
 
-    bool ReadData();
+private:
+    HANDLE serialHandle;
+    std::string buffer;
 };
