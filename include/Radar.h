@@ -12,7 +12,10 @@ public:
     float GetAngle() const;
     float GetDistance() const;
 
+    bool HasTarget() const;
+
 private:
     float angle;
     float distance;
+    bool hasTarget;
 };

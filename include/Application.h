@@ -2,7 +2,14 @@
 #pragma once
 
 #include "Renderer.h"
+#include "FileReader.h"
+#include "SerialPort.h"
 struct SDL_Window;
+enum class DataMode
+{
+    File,
+    Serial
+};
 
 
 class Application
@@ -25,5 +32,9 @@ public:
 
     float angle;
     float distance;
-    bool increasing;
+    FileReader fileReader;
+    SerialPort serialPort;
+    float dataTimer;
+    float dataInterval;
+    DataMode dataMode;
 };
