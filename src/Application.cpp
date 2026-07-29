@@ -169,11 +169,11 @@ void Application::Run()
                     
                         std::cout << "Ports refreshed\n";
                     }
-                    
-                    
-                    
+
+
+
                     // Back button
-                    
+
                     if(renderer.IsBackButtonClicked(x,y))
                     {
                         availablePorts.clear();
@@ -198,12 +198,22 @@ void Application::Run()
                 if(dataMode == DataMode::File)
                 {
                     if(fileReader.Read(angle,distance))
-                        radar.Update(angle,distance);
+                    {
+                        if(distance >= 0)
+                        {
+                            radar.Update(angle,distance);
+                        }
+                    }
                 }
                 else
                 {
                     if(serialPort.Read(angle,distance))
-                        radar.Update(angle,distance);
+                    {
+                        if(distance >= 0)
+                        {
+                            radar.Update(angle,distance);
+                        }
+                    }
                 }
             }
         

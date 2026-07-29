@@ -72,59 +72,40 @@ bool SerialPort::Open(const std::string& portName)
 
 bool SerialPort::Read(float& angle, float& distance)
 {
-    if(serialHandle == INVALID_HANDLE_VALUE)
-    {
-        return false;
-    }
+    char buffer[64];
 
+    DWORD bytesRead;
 
-    char data[128];
-    DWORD bytesRead = 0;
-
-
-    bool success = ReadFile(
+    if(!ReadFile(
         serialHandle,
-        data,
-        sizeof(data),
+        buffer,
+        sizeof(buffer)-1,
         &bytesRead,
-        nullptr
-    );
+        nullptr))
+    {
+        return false;
+    }
 
-
-    if(!success || bytesRead == 0)
+    if(bytesRead == 0)
     {
         return false;
     }
 
 
-    for(DWORD i = 0; i < bytesRead; i++)
-    {
-        char c = data[i];
+    buffer[bytesRead] = '\0';
 
 
-        if(c == '\n')
-        {
-            std::stringstream ss(buffer);
+    std::stringstream ss(buffer);
 
-            char comma;
-
-            ss >> angle;
-            ss >> comma;
-            ss >> distance;
+    char comma;
 
 
-            buffer.clear();
-
-            return true;
-        }
-        else
-        {
-            buffer += c;
-        }
-    }
+    ss >> angle;
+    ss >> comma;
+    ss >> distance;
 
 
-    return false;
+    return true;
 }
 
 void SerialPort::Close()

@@ -39,7 +39,7 @@ private:
     float pixelsPerCm;
     float radarRadius;
 
-    static constexpr float MAX_RANGE_CM = 300.0f;
+    static constexpr float MAX_RANGE_CM = 150.0f;
     static constexpr float EDGE_MARGIN = 5.0f;
 
     void DrawArc(float radius);

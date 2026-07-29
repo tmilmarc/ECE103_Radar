@@ -9,7 +9,7 @@ std::vector<std::string> SerialManager::GetAvailablePorts()
 
     for(int i = 1; i <= 255; i++)
     {
-        std::string portName = "COM" + std::to_string(i);
+        std::string portName = "\\\\.\\COM" + std::to_string(i);
 
 
         HANDLE handle = CreateFileA(
