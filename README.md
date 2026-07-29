@@ -1,7 +1,7 @@
 #ECE103_Radar
 
 ##Overview
-
+Our goal with this project is to create a working radar detection system using an ultrasonic sensor in conjunction with a micro servo motor. The idea is to have the ultrasonic motor spin on the servo motor and aim towards the detected object. Our final end goal is to use a laser as well that would work as a faux laser-guided defense system.
 ##Design Goals
 
 ##Hardware
