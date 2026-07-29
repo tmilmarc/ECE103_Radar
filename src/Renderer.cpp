@@ -15,6 +15,17 @@ Renderer::Renderer()
 
     centerX = 400;
     centerY = 600;
+
+    simulationButton.x = 250;
+    simulationButton.y = 200;
+    simulationButton.width = 300;
+    simulationButton.height = 80;
+
+
+    serialButton.x = 250;
+    serialButton.y = 320;
+    serialButton.width = 300;
+    serialButton.height = 80;
 }
 
 Renderer::~Renderer()
@@ -197,8 +208,81 @@ void Renderer::DrawRadii()
     }
 }
 
+void Renderer::DrawMenu()
+{
+    SDL_SetRenderDrawColor(
+        renderer,
+        20,
+        20,
+        20,
+        255
+    );
+
+    SDL_RenderClear(renderer);
+
+
+    // Simulation button
+    SDL_FRect simulationButton;
+
+    simulationButton.x = 250;
+    simulationButton.y = 200;
+    simulationButton.w = 300;
+    simulationButton.h = 80;
+
+
+    SDL_SetRenderDrawColor(
+        renderer,
+        0,
+        120,
+        0,
+        255
+    );
+
+    SDL_RenderFillRect(
+        renderer,
+        &simulationButton
+    );
+
+
+    // Serial button
+    SDL_FRect serialButton;
+
+    serialButton.x = 250;
+    serialButton.y = 320;
+    serialButton.w = 300;
+    serialButton.h = 80;
+
+
+    SDL_SetRenderDrawColor(
+        renderer,
+        0,
+        0,
+        150,
+        255
+    );
+
+    SDL_RenderFillRect(
+        renderer,
+        &serialButton
+    );
+
+
+    SDL_RenderPresent(renderer);
+}
+
 void Renderer::Shutdown()
 {
     SDL_DestroyRenderer(renderer);
     renderer = nullptr;
+}
+
+bool Renderer::IsSimulationButtonClicked(float x, float y)
+{
+    return simulationButton.Contains(x,y);
+}
+
+
+bool Renderer::IsSerialButtonClicked(float x, float y)
+{
+    return serialButton.Contains(x,y);
 }

@@ -12,6 +12,7 @@ Application::Application()
     distance = 0.0f;
     dataTimer = 0.0f;
     dataInterval = 0.03f;
+    state = AppState::Menu;
 }
 
 Application::~Application()
@@ -49,45 +50,7 @@ bool Application::Initialize()
         return false;
     }
 
-    int choice;
     
-    std::cout << "Select data source\n";
-    std::cout << "1 - Simulation File\n";
-    std::cout << "2 - Serial Port\n";
-    std::cout << "> ";
-    
-    std::cin >> choice;
-    
-    if(choice == 1)
-    {
-        dataMode = DataMode::File;
-    }
-    else
-    {
-        dataMode = DataMode::Serial;
-    }
-    
-    if(dataMode == DataMode::File)
-    {
-        if(!fileReader.Open())
-        {
-            std::cerr << "Could not open radar data file\n";
-            return false;
-        }
-    }
-    else
-    {
-        std::string portName;
-
-        std::cout << "Enter COM port (example COM3): ";
-        std::cin >> portName;
-
-        if(!serialPort.Open(portName))
-        {
-            std::cerr << "Could not open serial port\n";
-            return false;
-        }
-    }
     running = true;
 
     return true;
@@ -118,34 +81,80 @@ void Application::Run()
             {
                 running = false;
             }
+        
+        
+            if(state == AppState::Menu)
+            {
+                if(event.type == SDL_EVENT_MOUSE_BUTTON_DOWN)
+                {
+                    int x = event.button.x;
+                    int y = event.button.y;
+                
+                
+                    // Simulation button
+                    if(renderer.IsSimulationButtonClicked(x,y))
+                    {
+                        dataMode = DataMode::File;
+                        if(!fileReader.Open())
+                        {
+                            std::cerr << "Could not open radar data file\n";
+                        }
+                        else
+                        {
+                            dataTimer = 0.0f;
+                            state = AppState::Running;
+                        }
+                    }
+                
+                
+                    // Serial button
+                    else if(renderer.IsSerialButtonClicked(x,y))
+                    {
+                        dataMode = DataMode::Serial;
+                    
+                        if(!serialPort.Open("COM3"))
+                        {
+                            std::cerr << "Serial failed\n";
+                        }
+                        else
+                        {
+                            dataTimer = 0.0f;
+                            state = AppState::Running;
+                        }
+                    }
+                }
+            }
         }
 
-
-        dataTimer += deltaTime;
-
-
-        if(dataTimer >= dataInterval)
+        
+        if(state == AppState::Running)
         {
-            dataTimer = 0.0f;
-
-            if(dataMode == DataMode::File)
+            dataTimer += deltaTime;
+        
+            if(dataTimer >= dataInterval)
             {
-                if(fileReader.Read(angle, distance))
+                dataTimer = 0;
+            
+                if(dataMode == DataMode::File)
                 {
-                    radar.Update(angle, distance);
+                    if(fileReader.Read(angle,distance))
+                        radar.Update(angle,distance);
+                }
+                else
+                {
+                    if(serialPort.Read(angle,distance))
+                        radar.Update(angle,distance);
                 }
             }
-            else
-            {
-                if(serialPort.Read(angle, distance))
-                {
-                    radar.Update(angle, distance);
-                }
-            }
+        
+            renderer.Draw(radar);
         }
-
-
-        renderer.Draw(radar);
+        else if(state == AppState::Menu)
+        {
+            renderer.DrawMenu();
+        }
+        
+        
 
         SDL_Delay(16);
     }
@@ -156,6 +165,8 @@ void Application::Shutdown()
     renderer.Shutdown();
 
     serialPort.Close();
+
+    fileReader.Close();
 
     if(window != nullptr)
     {

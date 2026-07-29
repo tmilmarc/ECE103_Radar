@@ -3,6 +3,7 @@
 
 #include <SDL3/SDL.h>
 #include "Radar.h"
+#include "Button.h"
 
 class Renderer
 {
@@ -12,8 +13,12 @@ public:
 
     bool Initialize(SDL_Window* window);
     void Draw(Radar& radar);
+    void DrawMenu();
 
     void Shutdown();
+
+    bool IsSimulationButtonClicked(float x, float y);
+    bool IsSerialButtonClicked(float x, float y);
 
 private:
 
@@ -34,4 +39,7 @@ private:
     void DrawArc(float radius);
     void DrawRangeCircles();
     void DrawRadii();
+    
+    Button simulationButton;
+    Button serialButton;
 };

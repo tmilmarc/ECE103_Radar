@@ -10,6 +10,11 @@ enum class DataMode
     File,
     Serial
 };
+enum class AppState
+{
+    Menu,
+    Running
+};
 
 
 class Application
@@ -37,4 +42,5 @@ public:
     float dataTimer;
     float dataInterval;
     DataMode dataMode;
+    AppState state;
 };

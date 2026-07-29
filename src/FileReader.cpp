@@ -47,3 +47,11 @@ bool FileReader::Read(float& angle, float& distance)
 
     return true;
 }
+
+void FileReader::Close()
+{
+    if(file.is_open())
+    {
+        file.close();
+    }
+}

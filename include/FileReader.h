@@ -14,6 +14,7 @@ public:
     bool Open() override;
 
     bool Read(float& angle, float& distance) override;
+    void Close();
 
 
 private:

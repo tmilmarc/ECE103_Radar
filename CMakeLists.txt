@@ -19,6 +19,7 @@ add_executable(ECE103_Radar
     src/Radar.cpp
     src/SerialPort.cpp
     src/FileReader.cpp
+    src/Button.cpp
 )
 
 target_include_directories(ECE103_Radar PRIVATE
