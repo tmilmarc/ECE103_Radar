@@ -27,7 +27,7 @@ float getDistance() {
   delayMicroseconds(10);
   digitalWrite(TRIG_PIN, LOW);
 
-  long duration = pulseIn(ECHO_PIN, HIGH, 17500);
+  unsigned long duration = pulseIn(ECHO_PIN, HIGH, 17500);
 
   if (duration == 0) {
     return -1;
@@ -40,40 +40,35 @@ void loop() {
   // Sweep from 0° to 180°
   for (int angle = 0; angle <= 180; angle++) {
     radar.write(angle);
-
-    Serial.print("Angle: ");
+    delay(15);
     Serial.print(angle);
-    Serial.print(", Distance: ");
+    Serial.print(",");
 
     float distance = getDistance();
 
     if (distance < 0) {
-      Serial.println("Out of Range");
+      Serial.println(-1);
     } else {
-      Serial.print(distance, 1);
-      Serial.println(" cm");
+      Serial.println(distance);
+      
     }
-
     delay(10);
   }
 
   // Sweep from 180° back to 0°
   for (int angle = 180; angle >= 0; angle--) {
     radar.write(angle);
-
-    Serial.print("Angle: ");
-    Serial.print(angle);
-    Serial.print(", Distance: ");
-
+    delay(15);
     float distance = getDistance();
+    Serial.print(angle);
+    Serial.print(",");
 
-    if (distance < 0 || distance > 300) {
-      Serial.println("Out of Range");
+    if (distance < 0) {
+      Serial.println(-1);
     } else {
-      Serial.print(distance, 1);
-      Serial.println(" cm");
+      Serial.println(distance);
+      
     }
-
     delay(10);
   }
 }
