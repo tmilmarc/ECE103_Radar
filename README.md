@@ -5,6 +5,11 @@ Our goal with this project is to create a working radar detection system using a
 ##Design Goals
 
 ##Hardware
+-Huzzah ESP32 Micro Controller
+-Two Micro Servo 9g Motors
+-Breadboard
+-Ultrasonic Sensor
+-Laser Diode
 
 ##Software
 -Language: C++
