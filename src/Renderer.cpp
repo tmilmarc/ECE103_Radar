@@ -286,3 +286,131 @@ bool Renderer::IsSerialButtonClicked(float x, float y)
 {
     return serialButton.Contains(x,y);
 }
+
+void Renderer::DrawSerialMenu(
+    const std::vector<std::string>& ports
+)
+{
+    SDL_SetRenderDrawColor(
+        renderer,
+        30,
+        30,
+        30,
+        255
+    );
+
+    SDL_RenderClear(renderer);
+
+
+    // Draw each COM port as a button
+
+    for(int i = 0; i < ports.size(); i++)
+    {
+        SDL_FRect button;
+
+        button.x = 250;
+        button.y = 150 + i * 80;
+        button.w = 300;
+        button.h = 50;
+
+
+        SDL_SetRenderDrawColor(
+            renderer,
+            0,
+            100,
+            200,
+            255
+        );
+
+        SDL_RenderFillRect(
+            renderer,
+            &button
+        );
+    }
+
+    // Refresh button
+
+    SDL_FRect refreshButton;
+
+    refreshButton.x = 250;
+    refreshButton.y = 500;
+    refreshButton.w = 140;
+    refreshButton.h = 50;
+
+
+    SDL_SetRenderDrawColor(
+        renderer,
+        0,
+        150,
+        0,
+        255
+    );
+
+    SDL_RenderFillRect(
+        renderer,
+        &refreshButton
+    );
+
+
+
+    // Back button
+
+    SDL_FRect backButton;
+
+    backButton.x = 410;
+    backButton.y = 500;
+    backButton.w = 140;
+    backButton.h = 50;
+
+
+    SDL_SetRenderDrawColor(
+        renderer,
+        150,
+        0,
+        0,
+        255
+    );
+
+    SDL_RenderFillRect(
+        renderer,
+        &backButton
+    );
+
+
+    SDL_RenderPresent(renderer);
+}
+
+bool Renderer::IsSerialPortButtonClicked(
+    int x,
+    int y,
+    int index
+)
+{
+    int buttonY = 150 + index * 80;
+
+
+    return
+        x > 250 &&
+        x < 550 &&
+        y > buttonY &&
+        y < buttonY + 50;
+}
+
+bool Renderer::IsRefreshButtonClicked(int x, int y)
+{
+    return
+        x > 250 &&
+        x < 390 &&
+        y > 500 &&
+        y < 550;
+}
+
+
+bool Renderer::IsBackButtonClicked(int x, int y)
+{
+    return
+        x > 410 &&
+        x < 550 &&
+        y > 500 &&
+        y < 550;
+}

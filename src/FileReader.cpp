@@ -2,14 +2,20 @@
 #include <sstream>
 
 
-FileReader::FileReader(const std::string& filename)
+FileReader::FileReader()
 {
-    this->filename = filename;
+    
 }
 
 
-bool FileReader::Open()
+
+bool FileReader::Open(const std::string& filename)
 {
+    if(file.is_open())
+    {
+        file.close();
+    }
+
     file.open(filename);
 
     return file.is_open();

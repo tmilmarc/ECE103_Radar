@@ -13,13 +13,17 @@ find_package(SDL3 REQUIRED CONFIG)
 
 #Links all cpp files in src folder to make the executable
 add_executable(ECE103_Radar
-    src/main.cpp
     src/Application.cpp
-    src/Renderer.cpp
-    src/Radar.cpp
-    src/SerialPort.cpp
-    src/FileReader.cpp
     src/Button.cpp
+    src/DataSource.cpp
+    src/FileDialog.cpp
+    src/FileReader.cpp
+    src/main.cpp
+    src/Radar.cpp
+    src/Renderer.cpp
+    src/SerialManager.cpp
+    src/SerialPort.cpp
+    
 )
 
 target_include_directories(ECE103_Radar PRIVATE

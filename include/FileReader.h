@@ -9,17 +9,16 @@ class FileReader : public DataSource
 {
 public:
 
-    FileReader(const std::string& filename);
+    FileReader();
+    bool Open(const std::string& filename) override;
 
-    bool Open() override;
 
     bool Read(float& angle, float& distance) override;
-    void Close();
+    void Close() override;
 
 
 private:
 
-    std::string filename;
 
     std::ifstream file;
 };

@@ -4,7 +4,7 @@
 #include <iostream>
 
 Application::Application()
-    :fileReader("radar_data.txt")
+    
 {
     window = nullptr;
     running = false;
@@ -12,7 +12,7 @@ Application::Application()
     distance = 0.0f;
     dataTimer = 0.0f;
     dataInterval = 0.03f;
-    state = AppState::Menu;
+    state = AppState::MainMenu;
 }
 
 Application::~Application()
@@ -81,9 +81,20 @@ void Application::Run()
             {
                 running = false;
             }
+
+             if(event.type == SDL_EVENT_KEY_DOWN)
+            {
+                if(event.key.key == SDLK_ESCAPE)
+                {
+                    if(state == AppState::Running)
+                    {
+                        ReturnToMenu();
+                    }
+                }
+            }
         
         
-            if(state == AppState::Menu)
+            if(state == AppState::MainMenu)
             {
                 if(event.type == SDL_EVENT_MOUSE_BUTTON_DOWN)
                 {
@@ -95,7 +106,7 @@ void Application::Run()
                     if(renderer.IsSimulationButtonClicked(x,y))
                     {
                         dataMode = DataMode::File;
-                        if(!fileReader.Open())
+                        if(!fileReader.Open("radar_data.txt"))
                         {
                             std::cerr << "Could not open radar data file\n";
                         }
@@ -110,21 +121,70 @@ void Application::Run()
                     // Serial button
                     else if(renderer.IsSerialButtonClicked(x,y))
                     {
-                        dataMode = DataMode::Serial;
-                    
-                        if(!serialPort.Open("COM3"))
+                        availablePorts = serialManager.GetAvailablePorts();
+                        
+                        if(availablePorts.empty())
                         {
-                            std::cerr << "Serial failed\n";
+                            std::cerr << "No serial devices found\n";
                         }
-                        else
-                        {
-                            dataTimer = 0.0f;
-                            state = AppState::Running;
-                        }
+
+                        
+                        state = AppState::SerialMenu;
                     }
                 }
             }
+
+             if(state == AppState::SerialMenu)
+             {
+                 if(event.type == SDL_EVENT_MOUSE_BUTTON_DOWN)
+                 {
+                     int x = event.button.x;
+                     int y = event.button.y;
+                 
+                 
+                     for(size_t i = 0; i < availablePorts.size(); i++)
+                     {
+                         if(renderer.IsSerialPortButtonClicked(x,y,i))
+                         {
+                             if(serialPort.Open(availablePorts[i]))
+                             {
+                                 dataMode = DataMode::Serial;
+                                 dataTimer = 0.0f;
+                                 state = AppState::Running;
+                             }
+                             else
+                             {
+                                serialPort.Close(); 
+                                std::cerr 
+                                << "Could not connect to "
+                                << availablePorts[i]
+                                << "\n";
+                             }
+                         }
+                     }
+
+                     if(renderer.IsRefreshButtonClicked(x,y))
+                    {
+                        availablePorts = serialManager.GetAvailablePorts();
+                    
+                        std::cout << "Ports refreshed\n";
+                    }
+                    
+                    
+                    
+                    // Back button
+                    
+                    if(renderer.IsBackButtonClicked(x,y))
+                    {
+                        availablePorts.clear();
+                    
+                        state = AppState::MainMenu;
+                    }
+                 }
+             }
         }
+
+       
 
         
         if(state == AppState::Running)
@@ -149,15 +209,32 @@ void Application::Run()
         
             renderer.Draw(radar);
         }
-        else if(state == AppState::Menu)
+        else if(state == AppState::MainMenu)
         {
             renderer.DrawMenu();
+        }
+        else if(state == AppState::SerialMenu)
+        {
+            renderer.DrawSerialMenu(availablePorts);
         }
         
         
 
         SDL_Delay(16);
     }
+}
+
+void Application::ReturnToMenu()
+{
+    serialPort.Close();
+    fileReader.Close();
+
+    angle = 0.0f;
+    distance = 0.0f;
+
+    dataTimer = 0.0f;
+
+    state = AppState::MainMenu;
 }
 
 void Application::Shutdown()

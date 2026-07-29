@@ -4,6 +4,8 @@
 #include "Renderer.h"
 #include "FileReader.h"
 #include "SerialPort.h"
+#include "SerialManager.h"
+#include <vector>
 struct SDL_Window;
 enum class DataMode
 {
@@ -12,7 +14,9 @@ enum class DataMode
 };
 enum class AppState
 {
-    Menu,
+    MainMenu,
+    FileMenu,
+    SerialMenu,
     Running
 };
 
@@ -43,4 +47,10 @@ public:
     float dataInterval;
     DataMode dataMode;
     AppState state;
+
+    void ReturnToMenu();
+
+    SerialManager serialManager;
+
+    std::vector<std::string> availablePorts;
 };

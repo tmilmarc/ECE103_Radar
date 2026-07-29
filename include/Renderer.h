@@ -4,6 +4,8 @@
 #include <SDL3/SDL.h>
 #include "Radar.h"
 #include "Button.h"
+#include <vector>
+#include <string>
 
 class Renderer
 {
@@ -19,6 +21,10 @@ public:
 
     bool IsSimulationButtonClicked(float x, float y);
     bool IsSerialButtonClicked(float x, float y);
+    void DrawSerialMenu(const std::vector<std::string>& ports);
+    bool IsSerialPortButtonClicked(int x, int y, int index);
+    bool IsRefreshButtonClicked(int x, int y);
+    bool IsBackButtonClicked(int x, int y);
 
 private:
 
