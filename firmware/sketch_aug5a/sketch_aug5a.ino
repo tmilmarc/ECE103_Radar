@@ -41,7 +41,7 @@ void setup() {
   laserServo.write(90);
   radar.write(90);
 
-  delay(100000);
+  delay(1000);
 }
 
 //package to command dfplayer
