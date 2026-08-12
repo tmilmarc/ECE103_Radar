@@ -5,6 +5,7 @@
 #include "FileReader.h"
 #include "SerialPort.h"
 #include "SerialManager.h"
+#include <fstream>
 #include <vector>
 struct SDL_Window;
 enum class DataMode
@@ -43,6 +44,8 @@ public:
     float distance;
     FileReader fileReader;
     SerialPort serialPort;
+    std::ofstream recordingFile;
+    std::string recordingPath;
     float dataTimer;
     float dataInterval;
     DataMode dataMode;

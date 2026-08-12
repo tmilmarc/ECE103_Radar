@@ -1,7 +1,24 @@
 //Owns main loop and initializes SDL
 #include "Application.h"
+#include "FileDialog.h"
 #include <SDL3/SDL.h>
 #include <iostream>
+
+namespace
+{
+    bool HasTxtExtension(const std::string& path)
+    {
+        const std::string lower = path;
+        const size_t dot = lower.find_last_of('.');
+
+        if(dot == std::string::npos)
+        {
+            return false;
+        }
+
+        return lower.substr(dot + 1) == "txt" || lower.substr(dot + 1) == "TXT";
+    }
+}
 
 Application::Application()
     
@@ -13,6 +30,7 @@ Application::Application()
     dataTimer = 0.0f;
     dataInterval = 0.03f;
     state = AppState::MainMenu;
+    recordingPath.clear();
 }
 
 Application::~Application()
@@ -105,15 +123,28 @@ void Application::Run()
                     // Simulation button
                     if(renderer.IsSimulationButtonClicked(x,y))
                     {
-                        dataMode = DataMode::File;
-                        if(!fileReader.Open("radar_data.txt"))
+                        const std::string filePath = FileDialog::OpenFile();
+
+                        if(filePath.empty())
                         {
-                            std::cerr << "Could not open radar data file\n";
+                            std::cout << "Simulation file selection cancelled\n";
+                        }
+                        else if(!HasTxtExtension(filePath))
+                        {
+                            std::cerr << "Please choose a .txt file for simulated data\n";
                         }
                         else
                         {
-                            dataTimer = 0.0f;
-                            state = AppState::Running;
+                            dataMode = DataMode::File;
+                            if(!fileReader.Open(filePath))
+                            {
+                                std::cerr << "Could not open radar data file\n";
+                            }
+                            else
+                            {
+                                dataTimer = 0.0f;
+                                state = AppState::Running;
+                            }
                         }
                     }
                 
@@ -122,12 +153,6 @@ void Application::Run()
                     else if(renderer.IsSerialButtonClicked(x,y))
                     {
                         availablePorts = serialManager.GetAvailablePorts();
-                        
-                        if(availablePorts.empty())
-                        {
-                            std::cerr << "No serial devices found\n";
-                        }
-
                         
                         state = AppState::SerialMenu;
                     }
@@ -148,9 +173,29 @@ void Application::Run()
                          {
                              if(serialPort.Open(availablePorts[i]))
                              {
+                                 const std::string outputPath = FileDialog::SaveFile();
+
+                                 if(outputPath.empty())
+                                 {
+                                     serialPort.Close();
+                                     std::cout << "Recording cancelled\n";
+                                     break;
+                                 }
+
+                                 recordingPath = outputPath;
+                                 recordingFile.open(recordingPath, std::ios::out | std::ios::trunc);
+
+                                 if(!recordingFile.is_open())
+                                 {
+                                     serialPort.Close();
+                                     std::cerr << "Could not create recording file\n";
+                                     break;
+                                 }
+
                                  dataMode = DataMode::Serial;
                                  dataTimer = 0.0f;
                                  state = AppState::Running;
+                                 break;
                              }
                              else
                              {
@@ -168,6 +213,7 @@ void Application::Run()
                         availablePorts = serialManager.GetAvailablePorts();
                     
                         std::cout << "Ports refreshed\n";
+                        break;
                     }
 
 
@@ -179,6 +225,7 @@ void Application::Run()
                         availablePorts.clear();
                     
                         state = AppState::MainMenu;
+                        break;
                     }
                  }
              }
@@ -212,6 +259,12 @@ void Application::Run()
                         if(distance >= 0)
                         {
                             radar.Update(angle,distance);
+
+                            if(recordingFile.is_open())
+                            {
+                                recordingFile << angle << "," << distance << "\n";
+                                recordingFile.flush();
+                            }
                         }
                     }
                 }
@@ -239,6 +292,12 @@ void Application::ReturnToMenu()
     serialPort.Close();
     fileReader.Close();
 
+    if(recordingFile.is_open())
+    {
+        recordingFile.close();
+    }
+
+    recordingPath.clear();
     angle = 0.0f;
     distance = 0.0f;
 
@@ -254,6 +313,11 @@ void Application::Shutdown()
     serialPort.Close();
 
     fileReader.Close();
+
+    if(recordingFile.is_open())
+    {
+        recordingFile.close();
+    }
 
     if(window != nullptr)
     {

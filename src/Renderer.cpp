@@ -3,8 +3,47 @@
 #include <SDL3/SDL.h>
 #include <cmath>
 #include <algorithm>
+#include <cstring>
 
 constexpr float PI = 3.14159265358979323846f;
+
+namespace
+{
+    void DrawCenteredButtonLabel(SDL_Renderer* renderer, const SDL_FRect& rect, const char* label)
+    {
+        float oldScaleX = 1.0f;
+        float oldScaleY = 1.0f;
+        SDL_GetRenderScale(renderer, &oldScaleX, &oldScaleY);
+
+        const float targetTextHeight = rect.h * 0.26f;
+        const float scale = std::clamp(targetTextHeight / 8.0f, 1.8f, 5.6f);
+        const float glyphSize = SDL_DEBUG_TEXT_FONT_CHARACTER_SIZE * scale;
+        const float textWidth = static_cast<float>(std::strlen(label)) * glyphSize * 0.8f;
+        const float x = rect.x + (rect.w - textWidth) / 2.0f;
+        const float y = rect.y + (rect.h - glyphSize) / 2.0f;
+
+        SDL_SetRenderScale(renderer, scale, scale);
+
+        const float drawX = x / scale;
+        const float drawY = y / scale;
+
+        for(int iy = -1; iy <= 1; ++iy)
+        {
+            for(int ix = -1; ix <= 1; ++ix)
+            {
+                if(ix == 0 && iy == 0)
+                {
+                    continue;
+                }
+
+                SDL_RenderDebugText(renderer, drawX + ix * 0.1f, drawY + iy * 0.1f, label);
+            }
+        }
+
+        SDL_RenderDebugText(renderer, drawX, drawY, label);
+        SDL_SetRenderScale(renderer, oldScaleX, oldScaleY);
+    }
+}
 
 Renderer::Renderer()
 {
@@ -210,6 +249,8 @@ void Renderer::DrawRadii()
 
 void Renderer::DrawMenu()
 {
+    SDL_GetRenderOutputSize(renderer, &screenWidth, &screenHeight);
+
     SDL_SetRenderDrawColor(
         renderer,
         20,
@@ -220,15 +261,16 @@ void Renderer::DrawMenu()
 
     SDL_RenderClear(renderer);
 
+    const float buttonWidth = std::clamp(static_cast<float>(screenWidth) * 0.72f, 500.0f, 820.0f);
+    const float buttonHeight = std::clamp(static_cast<float>(screenHeight) * 0.18f, 110.0f, 160.0f);
+    const float gap = std::clamp(static_cast<float>(screenHeight) * 0.05f, 35.0f, 90.0f);
+    const float buttonX = (screenWidth - buttonWidth) / 2.0f;
+    const float startY = (screenHeight - (buttonHeight * 2.0f + gap)) / 2.0f;
 
-    // Simulation button
-    SDL_FRect simulationButton;
-
-    simulationButton.x = 250;
-    simulationButton.y = 200;
-    simulationButton.w = 300;
-    simulationButton.h = 80;
-
+    simulationButton.x = buttonX;
+    simulationButton.y = startY;
+    simulationButton.width = buttonWidth;
+    simulationButton.height = buttonHeight;
 
     SDL_SetRenderDrawColor(
         renderer,
@@ -238,20 +280,25 @@ void Renderer::DrawMenu()
         255
     );
 
+    SDL_FRect simulationRect = { simulationButton.x, simulationButton.y, simulationButton.width, simulationButton.height };
     SDL_RenderFillRect(
         renderer,
-        &simulationButton
+        &simulationRect
     );
 
+    SDL_SetRenderDrawColor(
+        renderer,
+        255,
+        255,
+        255,
+        255
+    );
+    DrawCenteredButtonLabel(renderer, simulationRect, "Simulation");
 
-    // Serial button
-    SDL_FRect serialButton;
-
-    serialButton.x = 250;
-    serialButton.y = 320;
-    serialButton.w = 300;
-    serialButton.h = 80;
-
+    serialButton.x = buttonX;
+    serialButton.y = startY + buttonHeight + gap;
+    serialButton.width = buttonWidth;
+    serialButton.height = buttonHeight;
 
     SDL_SetRenderDrawColor(
         renderer,
@@ -261,11 +308,20 @@ void Renderer::DrawMenu()
         255
     );
 
+    SDL_FRect serialRect = { serialButton.x, serialButton.y, serialButton.width, serialButton.height };
     SDL_RenderFillRect(
         renderer,
-        &serialButton
+        &serialRect
     );
 
+    SDL_SetRenderDrawColor(
+        renderer,
+        255,
+        255,
+        255,
+        255
+    );
+    DrawCenteredButtonLabel(renderer, serialRect, "Serial");
 
     SDL_RenderPresent(renderer);
 }
@@ -291,6 +347,8 @@ void Renderer::DrawSerialMenu(
     const std::vector<std::string>& ports
 )
 {
+    SDL_GetRenderOutputSize(renderer, &screenWidth, &screenHeight);
+
     SDL_SetRenderDrawColor(
         renderer,
         30,
@@ -301,42 +359,62 @@ void Renderer::DrawSerialMenu(
 
     SDL_RenderClear(renderer);
 
+    const float buttonWidth = std::clamp(static_cast<float>(screenWidth) * 0.72f, 500.0f, 900.0f);
+    const float buttonX = (screenWidth - buttonWidth) / 2.0f;
+    const float portButtonWidth = buttonWidth;
+    const float portButtonHeight = std::clamp(static_cast<float>(screenHeight) * 0.09f, 60.0f, 92.0f);
+    const float rowGap = 18.0f;
+    const float topY = std::max(90.0f, (screenHeight - (std::max(1, static_cast<int>(ports.size())) * (portButtonHeight + rowGap) + 50.0f)) / 2.0f);
 
-    // Draw each COM port as a button
-
-    for(int i = 0; i < ports.size(); i++)
+    if(ports.empty())
     {
-        SDL_FRect button;
-
-        button.x = 250;
-        button.y = 150 + i * 80;
-        button.w = 300;
-        button.h = 50;
-
-
-        SDL_SetRenderDrawColor(
-            renderer,
-            0,
-            100,
-            200,
-            255
-        );
-
-        SDL_RenderFillRect(
-            renderer,
-            &button
-        );
+        SDL_SetRenderDrawColor(renderer, 60, 60, 60, 255);
+        SDL_FRect box = { buttonX, topY, portButtonWidth, portButtonHeight * 1.8f };
+        SDL_RenderFillRect(renderer, &box);
+        SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+        DrawCenteredButtonLabel(renderer, box, "No devices found");
     }
+    else
+    {
+        for(int i = 0; i < ports.size(); i++)
+        {
+            SDL_FRect button;
 
-    // Refresh button
+            button.x = buttonX;
+            button.y = topY + i * (portButtonHeight + rowGap);
+            button.w = portButtonWidth;
+            button.h = portButtonHeight;
+
+            SDL_SetRenderDrawColor(
+                renderer,
+                0,
+                100,
+                200,
+                255
+            );
+
+            SDL_RenderFillRect(
+                renderer,
+                &button
+            );
+
+            SDL_SetRenderDrawColor(
+                renderer,
+                255,
+                255,
+                255,
+                255
+            );
+            DrawCenteredButtonLabel(renderer, button, ports[i].c_str());
+        }
+    }
 
     SDL_FRect refreshButton;
 
-    refreshButton.x = 250;
-    refreshButton.y = 500;
-    refreshButton.w = 140;
-    refreshButton.h = 50;
-
+    refreshButton.x = buttonX;
+    refreshButton.y = static_cast<float>(screenHeight) - 110.0f;
+    refreshButton.w = buttonWidth * 0.45f;
+    refreshButton.h = 72.0f;
 
     SDL_SetRenderDrawColor(
         renderer,
@@ -351,17 +429,21 @@ void Renderer::DrawSerialMenu(
         &refreshButton
     );
 
-
-
-    // Back button
+    SDL_SetRenderDrawColor(
+        renderer,
+        255,
+        255,
+        255,
+        255
+    );
+    DrawCenteredButtonLabel(renderer, refreshButton, "Refresh");
 
     SDL_FRect backButton;
 
-    backButton.x = 410;
-    backButton.y = 500;
-    backButton.w = 140;
-    backButton.h = 50;
-
+    backButton.x = buttonX + buttonWidth * 0.55f;
+    backButton.y = static_cast<float>(screenHeight) - 110.0f;
+    backButton.w = buttonWidth * 0.45f;
+    backButton.h = 72.0f;
 
     SDL_SetRenderDrawColor(
         renderer,
@@ -376,6 +458,14 @@ void Renderer::DrawSerialMenu(
         &backButton
     );
 
+    SDL_SetRenderDrawColor(
+        renderer,
+        255,
+        255,
+        255,
+        255
+    );
+    DrawCenteredButtonLabel(renderer, backButton, "Back");
 
     SDL_RenderPresent(renderer);
 }
@@ -386,31 +476,50 @@ bool Renderer::IsSerialPortButtonClicked(
     int index
 )
 {
-    int buttonY = 150 + index * 80;
+    SDL_GetRenderOutputSize(renderer, &screenWidth, &screenHeight);
 
+    const float buttonWidth = std::clamp(static_cast<float>(screenWidth) * 0.72f, 500.0f, 900.0f);
+    const float buttonX = (screenWidth - buttonWidth) / 2.0f;
+    const float portButtonHeight = std::clamp(static_cast<float>(screenHeight) * 0.09f, 60.0f, 92.0f);
+    const float rowGap = 18.0f;
+    const float topY = std::max(90.0f, (screenHeight - ((std::max(1, index + 1)) * (portButtonHeight + rowGap) + 50.0f)) / 2.0f);
+    const float buttonY = topY + index * (portButtonHeight + rowGap);
 
-    return
-        x > 250 &&
-        x < 550 &&
-        y > buttonY &&
-        y < buttonY + 50;
+    return x > buttonX &&
+           x < buttonX + buttonWidth &&
+           y > buttonY &&
+           y < buttonY + portButtonHeight;
 }
 
 bool Renderer::IsRefreshButtonClicked(int x, int y)
 {
-    return
-        x > 250 &&
-        x < 390 &&
-        y > 500 &&
-        y < 550;
+    SDL_GetRenderOutputSize(renderer, &screenWidth, &screenHeight);
+
+    const float buttonWidth = std::clamp(static_cast<float>(screenWidth) * 0.72f, 500.0f, 900.0f);
+    const float buttonX = (screenWidth - buttonWidth) / 2.0f;
+    const float refreshX = buttonX;
+    const float refreshY = static_cast<float>(screenHeight) - 110.0f;
+    const float refreshW = buttonWidth * 0.45f;
+
+    return x > refreshX &&
+           x < refreshX + refreshW &&
+           y > refreshY &&
+           y < refreshY + 50.0f;
 }
 
 
 bool Renderer::IsBackButtonClicked(int x, int y)
 {
-    return
-        x > 410 &&
-        x < 550 &&
-        y > 500 &&
-        y < 550;
+    SDL_GetRenderOutputSize(renderer, &screenWidth, &screenHeight);
+
+    const float buttonWidth = std::clamp(static_cast<float>(screenWidth) * 0.72f, 500.0f, 900.0f);
+    const float buttonX = (screenWidth - buttonWidth) / 2.0f;
+    const float backX = buttonX + buttonWidth * 0.55f;
+    const float backY = static_cast<float>(screenHeight) - 110.0f;
+    const float backW = buttonWidth * 0.45f;
+
+    return x > backX &&
+           x < backX + backW &&
+           y > backY &&
+           y < backY + 50.0f;
 }

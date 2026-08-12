@@ -1,36 +1,61 @@
 #include "SerialManager.h"
 #include <windows.h>
-
+#include <vector>
 
 std::vector<std::string> SerialManager::GetAvailablePorts()
 {
     std::vector<std::string> ports;
 
+    HKEY key = nullptr;
+    LONG status = RegOpenKeyExA(
+        HKEY_LOCAL_MACHINE,
+        "HARDWARE\\DEVICEMAP\\SERIALCOMM",
+        0,
+        KEY_READ,
+        &key
+    );
 
-    for(int i = 1; i <= 255; i++)
+    if(status != ERROR_SUCCESS || key == nullptr)
     {
-        std::string portName = "\\\\.\\COM" + std::to_string(i);
-
-
-        HANDLE handle = CreateFileA(
-            portName.c_str(),
-            GENERIC_READ | GENERIC_WRITE,
-            0,
-            nullptr,
-            OPEN_EXISTING,
-            0,
-            nullptr
-        );
-
-
-        if(handle != INVALID_HANDLE_VALUE)
-        {
-            ports.push_back(portName);
-
-            CloseHandle(handle);
-        }
+        return ports;
     }
 
+    DWORD index = 0;
+    char valueName[256] = {0};
+    BYTE valueData[256] = {0};
+    DWORD valueNameSize = sizeof(valueName);
+    DWORD valueDataSize = sizeof(valueData);
 
+    while(true)
+    {
+        valueNameSize = sizeof(valueName);
+        valueDataSize = sizeof(valueData);
+
+        LONG enumStatus = RegEnumValueA(
+            key,
+            index,
+            valueName,
+            &valueNameSize,
+            nullptr,
+            nullptr,
+            valueData,
+            &valueDataSize
+        );
+
+        if(enumStatus != ERROR_SUCCESS)
+        {
+            break;
+        }
+
+        std::string port(reinterpret_cast<const char*>(valueData), valueDataSize);
+        if(port.rfind("COM", 0) == 0)
+        {
+            ports.push_back("\\\\.\\" + port);
+        }
+
+        ++index;
+    }
+
+    RegCloseKey(key);
     return ports;
 }
